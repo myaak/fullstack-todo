@@ -1,9 +1,12 @@
 import { pool } from "../database/database";
 import { TodoDTO, TodoGroup } from "../models/todoDTO";
+import { AtLeastOne } from "../models/helperTypes";
+import { UpdateTodoParameters } from "../models/updateTodoParameters";
+import { areObjectsEqual } from "./helpers";
 class TodoService {
   async getAllTodos(): Promise<TodoDTO[]> {
     const getAllTodos = await pool.query(
-      "SELECT TL.id, TL.title, TL.completed, COALESCE((SELECT ARRAY_AGG(todo_group_id) FROM TODO_AND_GROUPS WHERE todo_id = TL.id), '{}'::INTEGER[]) AS todo_groups FROM TODOLIST TL;",
+      "SELECT TL.id, TL.title, TL.completed, COALESCE((SELECT ARRAY_AGG(todo_group_id) FROM TODO_AND_GROUPS WHERE todo_id = TL.id), '{}'::INTEGER[]) AS todo_groups FROM TODOLIST TL ORDER BY ID;",
 
       []
     );
@@ -22,21 +25,45 @@ class TodoService {
     return newTodo; // вернуть один элемент
   }
 
-  async updateTodoTitle(id: number, title: string): Promise<boolean> {
+  async deleteTodo(id: number): Promise<boolean> {
     try {
-      await pool.query("UPDATE TODOLIST SET TITLE = $1 WHERE ID = $2", [title, id]);
+      await pool.query("DELETE FROM TODOLIST WHERE ID = $1", [id]);
       return true;
     } catch {
       return false;
     }
   }
 
-  async setTodoCompletedStatus(id: number, completed: boolean): Promise<boolean> {
+  async checkChanges(todo: TodoDTO): Promise<boolean> {
+    const getTodoItem = await pool.query("SELECT * FROM TODOLIST WHERE ID = $1", [todo.id]);
+    const todoItem: TodoDTO = getTodoItem.rows[0];
+    return areObjectsEqual(todoItem, todo);
+  }
+
+  async updateTodo(params: AtLeastOne<UpdateTodoParameters>, todo: TodoDTO): Promise<string> {
     try {
-      await pool.query("UPDATE TODOLIST SET COMPLETED = $1 WHERE ID = $2", [completed, id]);
-      return true;
+      if (!(await this.checkChanges(todo))) {
+        return "request changes";
+      }
+
+      let queryOptions = "";
+      const entries = Object.entries(params);
+
+      for (let i = 0; i < entries.length; i++) {
+        const [key, value] = entries[i];
+        queryOptions += `${key.toUpperCase()} = ${
+          typeof value === "string" ? `'${value}'` : `${String(value).toUpperCase()}`
+        }`;
+
+        if (i < entries.length - 1) {
+          queryOptions += ",";
+        }
+      }
+
+      await pool.query(`UPDATE TODOLIST SET ${queryOptions} WHERE ID = $1`, [todo.id]);
+      return "success";
     } catch {
-      return false;
+      return "error";
     }
   }
 

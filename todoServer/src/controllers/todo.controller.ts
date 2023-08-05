@@ -10,6 +10,7 @@ class TodoController {
       next(e);
     }
   }
+
   async addNewTodo(req: Request, res: Response, next: NextFunction) {
     try {
       const { title } = req.body;
@@ -20,33 +21,34 @@ class TodoController {
     }
   }
 
-  async updateTodoTitle(req: Request, res: Response, next: NextFunction) {
+  async deleteTodo(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const { title } = req.body;
-      const isUpdatedTodo = await todoService.updateTodoTitle(Number(id), title);
-      res.json(200).json({ successful: isUpdatedTodo });
+      const isTodoDeleted = await todoService.deleteTodo(Number(id));
+
+      res.status(200).json({ successful: isTodoDeleted });
     } catch (e) {
       next(e);
     }
   }
 
-  async setTodoCompletedStatus(req: Request, res: Response, next: NextFunction) {
+  async updateTodo(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
-      const { completed } = req.body;
-      const isUpdatedTodoCompletedStatus = await todoService.setTodoCompletedStatus(Number(id), completed);
-      res.status(200).json({ successful: isUpdatedTodoCompletedStatus });
+      const { params, todo } = req.body;
+      const isTodoUpdated = await todoService.updateTodo(params, todo);
+
+      res.status(200).json({ message: isTodoUpdated });
     } catch (e) {
       next(e);
     }
   }
 
   async addNewGroupToTodo(req: Request, res: Response, next: NextFunction) {
-    const { todo, groupId } = req.body;
-    const updatedTodo = await todoService.addNewGroupToTodo(todo, groupId);
-    res.status(200).json(updatedTodo);
     try {
+      const { todo, groupId } = req.body;
+      const updatedTodo = await todoService.addNewGroupToTodo(todo, groupId);
+
+      res.status(200).json(updatedTodo);
     } catch (e) {
       next(e);
     }
