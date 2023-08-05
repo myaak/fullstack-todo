@@ -7,5 +7,6 @@ router.post("/", todoController.addNewTodo);
 router.patch("/:id/title", todoController.updateTodoTitle);
 router.patch("/:id/completed", todoController.setTodoCompletedStatus);
 // в теории вот эти два патча можно в один пихнуть и проверять на optional в body?
+router.patch("/:id/group", todoController.addNewGroupToTodo);
 
 module.exports = router;
