@@ -1,7 +1,7 @@
 import { pool } from "../database/database";
 import { TodoDTO, TodoGroup } from "../models/todoDTO";
 import { AtLeastOne } from "../models/helperTypes";
-import { UpdateTodoParameters } from "../models/updateTodoParameters";
+import { UpdatedTodoResponse, UpdateTodoParameters } from "../models/updateTodoParameters";
 import { areObjectsEqual } from "./helpers";
 class TodoService {
   async getAllTodos(): Promise<TodoDTO[]> {
@@ -34,18 +34,25 @@ class TodoService {
     }
   }
 
-  async checkChanges(todo: TodoDTO): Promise<boolean> {
+  async checkChanges(todo: TodoDTO): Promise<boolean | UpdatedTodoResponse> {
     const getTodoItem = await pool.query("SELECT * FROM TODOLIST WHERE ID = $1", [todo.id]);
     const todoItem: TodoDTO = getTodoItem.rows[0];
-    return areObjectsEqual(todoItem, todo);
+    return areObjectsEqual(todoItem, todo) ? true : { message: "request changes", todo: todoItem };
   }
 
-  async updateTodo(params: AtLeastOne<UpdateTodoParameters>, todo: TodoDTO): Promise<string> {
+  async updateTodo(
+    isForce: boolean,
+    params: AtLeastOne<UpdateTodoParameters>,
+    todo: TodoDTO
+  ): Promise<UpdatedTodoResponse> {
     try {
-      if (!(await this.checkChanges(todo))) {
-        return "request changes";
+      // проверка нужны ли мзенения, если нужны - отправляем объект обратно и уведомляем что его уже меняли
+      const requestChanges = await this.checkChanges(todo);
+      if (!isForce && typeof requestChanges === "object") {
+        return requestChanges;
       }
 
+      // если все ок
       let queryOptions = "";
       const entries = Object.entries(params);
 
@@ -60,10 +67,10 @@ class TodoService {
         }
       }
 
-      await pool.query(`UPDATE TODOLIST SET ${queryOptions} WHERE ID = $1`, [todo.id]);
-      return "success";
+      const updatedTodo = await pool.query(`UPDATE TODOLIST SET ${queryOptions} WHERE ID = $1 RETURNING *`, [todo.id]);
+      return { message: "success", todo: updatedTodo.rows[0] };
     } catch {
-      return "error";
+      return { message: "error", todo: todo };
     }
   }
 

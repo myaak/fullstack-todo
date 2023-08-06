@@ -34,10 +34,10 @@ class TodoController {
 
   async updateTodo(req: Request, res: Response, next: NextFunction) {
     try {
-      const { params, todo } = req.body;
-      const isTodoUpdated = await todoService.updateTodo(params, todo);
+      const { isForce, params, todo } = req.body;
+      const isTodoUpdated = await todoService.updateTodo(isForce, params, todo);
 
-      res.status(200).json({ message: isTodoUpdated });
+      res.status(200).json(isTodoUpdated);
     } catch (e) {
       next(e);
     }
