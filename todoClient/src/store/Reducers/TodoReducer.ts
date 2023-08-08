@@ -172,7 +172,7 @@ export const addNewGroupToTodoRequest = createAsyncThunk(
 );
 
 export const deleteGroupFromTodoRequest = createAsyncThunk(
-  "addNewGroupToTodo",
+  "deleteGroupFromTodoRequest",
   async (params: { todo: ITodo; groupId: TodoGroup["id"] }, thinkApi) => {
     const { todo, groupId } = params;
     thinkApi.dispatch(setIsLoadingTodo(true));

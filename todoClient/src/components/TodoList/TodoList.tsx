@@ -6,11 +6,16 @@ import { fetchTodoGroups } from "../../store/Reducers/TodoGroupReducer.ts";
 import { TodoListWrapper } from "./TodoList.styled.ts";
 
 const TodoList = () => {
+  const activeAddingTodoId = useAppSelector((state) => state.todoGroups.activeAddingTodoId);
   const { todos, isLoadingTodoList } = useAppSelector((state) => state.todo);
   const { isLoadingGroups } = useAppSelector((state) => state.todoGroups);
   const dispatch = useAppDispatch();
 
-  const todoItems = useMemo(() => todos.map((item: ITodo) => <TodoItem key={item.id} todo={item} />), [todos]);
+  const todoItems = useMemo(
+    () =>
+      todos.map((item: ITodo) => <TodoItem key={item.id} isSelected={activeAddingTodoId === item.id} todo={item} />),
+    [todos, activeAddingTodoId]
+  );
 
   useEffect(() => {
     dispatch(fetchTodos());

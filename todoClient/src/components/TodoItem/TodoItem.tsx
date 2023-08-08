@@ -4,45 +4,38 @@ import {
   TodoInfoWrapper,
   TodoItemButtonsWrapper,
   TodoItemEditForm,
-  TodoItemGroupAddButton,
-  TodoItemGroupsWrapper,
   TodoTitle,
   TodoWrapper
 } from "./TodoItem.styled.ts";
 import React, { FormEvent, useCallback, useState } from "react";
 import TodoItemButtons from "./TodoItemButtons.tsx";
 import {
-  deleteGroupFromTodoRequest,
   removeTodo,
   updateCurrentTodo,
   updateTodoParams,
   updateTodoRequest
 } from "../../store/Reducers/TodoReducer.ts";
 import { useAppDispatch, useAppSelector } from "../../store/storeHooks.ts";
-import TodoGroupItem from "../TodoGroupItem/TodoGroupItem.tsx";
 import StyledCheckbox from "../Checkbox/Checkbox.tsx";
 import { deleteTodo } from "../../http/API.ts";
 import { RequestToUpdateTodoParameters, UpdateTodoParameters } from "../../types/updateTodoParameters.ts";
 import DropdownMenu from "../DropdownMenu/DropdownMenu.tsx";
-import { setActiveAddingTodoId } from "../../store/Reducers/TodoGroupReducer.ts";
+import TodoGroupList from "../TodoGroupList/TodoGroupList.tsx";
 
 interface TodoItemProps {
   todo: ITodo;
+  isSelected: boolean;
 }
 
-const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
-  const { id, title, completed, todo_groups } = todo;
+const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected }) => {
+  const { id, title, completed } = todo;
 
-  const todoGroups = useAppSelector((state) => state.todoGroups.todoGroups);
-  const activeAddingTodoId = useAppSelector((state) => state.todoGroups.activeAddingTodoId);
   const isLoadingTodo = useAppSelector((state) => state.todo.isLoadingTodo);
 
   const dispatch = useAppDispatch();
 
   const [editing, setEditing] = useState<boolean>(false);
   const [newTitle, setNewTitle] = useState<string>(title);
-
-  const isDropdownVisible = (todoId: ITodo["id"]) => activeAddingTodoId === todoId;
 
   const handleSaveResult = useCallback(
     async (isForce: boolean = false) => {
@@ -68,6 +61,8 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
     },
     [newTitle]
   );
+
+  console.log("RENDERED", title);
 
   const handleCompletedStatusChange = useCallback(async () => {
     const todoNewParams: UpdateTodoParameters = {
@@ -135,29 +130,8 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
           />
         </TodoItemButtonsWrapper>
       </TodoInfoWrapper>
-      <TodoItemGroupsWrapper>
-        {todo_groups.map((group: number, index: number) => (
-          <TodoGroupItem
-            key={index}
-            title={todoGroups.get(group) ?? ""}
-            onDelete={() => {
-              const requestToDeleteGroupParams = {
-                todo: todo,
-                groupId: group
-              };
-              dispatch(deleteGroupFromTodoRequest(requestToDeleteGroupParams));
-            }}
-          />
-        ))}
-        <TodoItemGroupAddButton
-          onClick={() => {
-            dispatch(setActiveAddingTodoId(activeAddingTodoId === id ? -1 : id));
-          }}
-        >
-          +
-        </TodoItemGroupAddButton>
-      </TodoItemGroupsWrapper>
-      {isDropdownVisible(id) && <DropdownMenu todo={todo} />}
+      <TodoGroupList todo={todo} />
+      {isSelected && <DropdownMenu todo={todo} />}
     </TodoWrapper>
   );
 };
