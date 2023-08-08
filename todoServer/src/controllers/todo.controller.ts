@@ -53,6 +53,16 @@ class TodoController {
       next(e);
     }
   }
+  async deleteGroupFromTodo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { todo, groupId } = req.body;
+      const updatedTodo = await todoService.deleteGroupFromTodo(todo, groupId);
+
+      res.status(200).json(updatedTodo);
+    } catch (e) {
+      next(e);
+    }
+  }
 }
 
 module.exports = new TodoController();

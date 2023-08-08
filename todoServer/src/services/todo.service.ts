@@ -6,7 +6,7 @@ import { areObjectsEqual } from "./helpers";
 class TodoService {
   async getAllTodos(): Promise<TodoDTO[]> {
     const getAllTodos = await pool.query(
-      "SELECT TL.id, TL.title, TL.completed, COALESCE((SELECT ARRAY_AGG(todo_group_id) FROM TODO_AND_GROUPS WHERE todo_id = TL.id), '{}'::INTEGER[]) AS todo_groups FROM TODOLIST TL ORDER BY ID;",
+      "SELECT TL.id, TL.title, TL.completed, COALESCE((SELECT ARRAY_AGG(todo_group_id) FROM TODO_AND_GROUPS WHERE todo_id = TL.id), '{}'::INTEGER[]) AS todo_groups FROM TODOLIST TL ORDER BY ID DESC;",
 
       []
     );
@@ -76,11 +76,23 @@ class TodoService {
 
   async addNewGroupToTodo(todo: TodoDTO, groupId: TodoGroup["id"]): Promise<TodoDTO> {
     const { id, todo_groups } = todo;
-    await pool.query("INSERT INTO TODOS_AND_GROUPS(TODO_ID, TODO_GROUP_ID) VALUES($1, $2)", [id, groupId]);
+    await pool.query("INSERT INTO TODO_AND_GROUPS(TODO_ID, TODO_GROUP_ID) VALUES($1, $2)", [id, groupId]);
 
     const updatedTodo: TodoDTO = {
       ...todo,
       todo_groups: [...todo_groups, groupId]
+    };
+
+    return updatedTodo;
+  }
+
+  async deleteGroupFromTodo(todo: TodoDTO, groupId: TodoGroup["id"]): Promise<TodoDTO> {
+    const { id, todo_groups } = todo;
+    await pool.query("DELETE FROM TODO_AND_GROUPS WHERE TODO_ID = $1 AND TODO_GROUP_ID = $2", [id, groupId]);
+
+    const updatedTodo: TodoDTO = {
+      ...todo,
+      todo_groups: todo_groups.filter((item: TodoGroup["id"]) => item !== groupId)
     };
 
     return updatedTodo;

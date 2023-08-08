@@ -8,5 +8,6 @@ router.delete("/:id", todoController.deleteTodo);
 router.patch("/:id", todoController.updateTodo);
 
 router.patch("/:id/group", todoController.addNewGroupToTodo);
+router.delete("/:id/group", todoController.deleteGroupFromTodo);
 
 module.exports = router;
