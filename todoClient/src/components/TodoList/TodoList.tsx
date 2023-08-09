@@ -7,14 +7,22 @@ import { TodoListWrapper } from "./TodoList.styled.ts";
 
 const TodoList = () => {
   const activeAddingTodoId = useAppSelector((state) => state.todoGroups.activeAddingTodoId);
+  const isChangesRequestedId = useAppSelector((state) => state.todo.isChangesRequestedId);
   const { todos, isLoadingTodoList } = useAppSelector((state) => state.todo);
   const { isLoadingGroups } = useAppSelector((state) => state.todoGroups);
   const dispatch = useAppDispatch();
 
   const todoItems = useMemo(
     () =>
-      todos.map((item: ITodo) => <TodoItem key={item.id} isSelected={activeAddingTodoId === item.id} todo={item} />),
-    [todos, activeAddingTodoId]
+      todos.map((item: ITodo) => (
+        <TodoItem
+          key={item.id}
+          isChangesRequested={isChangesRequestedId === item.id}
+          isSelected={activeAddingTodoId === item.id}
+          todo={item}
+        />
+      )),
+    [todos, activeAddingTodoId, isChangesRequestedId]
   );
 
   useEffect(() => {

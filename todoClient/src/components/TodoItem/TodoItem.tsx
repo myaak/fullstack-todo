@@ -7,7 +7,7 @@ import {
   TodoTitle,
   TodoWrapper
 } from "./TodoItem.styled.ts";
-import React, { FormEvent, useCallback, useState } from "react";
+import React, { FormEvent, useCallback, useEffect, useState } from "react";
 import TodoItemButtons from "./TodoItemButtons.tsx";
 import {
   removeTodo,
@@ -21,13 +21,15 @@ import { deleteTodo } from "../../http/API.ts";
 import { RequestToUpdateTodoParameters, UpdateTodoParameters } from "../../types/updateTodoParameters.ts";
 import DropdownMenu from "../DropdownMenu/DropdownMenu.tsx";
 import TodoGroupList from "../TodoGroupList/TodoGroupList.tsx";
+import Notification from "../Notification/Notification.tsx";
 
 interface TodoItemProps {
   todo: ITodo;
   isSelected: boolean;
+  isChangesRequested: boolean;
 }
 
-const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected }) => {
+const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected, isChangesRequested }) => {
   const { id, title, completed } = todo;
 
   const isLoadingTodo = useAppSelector((state) => state.todo.isLoadingTodo);
@@ -54,15 +56,20 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected }) => {
         todo: todo
       };
 
-      await dispatch(updateTodoRequest(todoUpdateRequestProps));
       dispatch(updateTodoParams(todoNewParams));
       dispatch(updateCurrentTodo({ ...todo, title: newTitle }));
+      await dispatch(updateTodoRequest(todoUpdateRequestProps));
       setEditing(false);
     },
-    [newTitle]
+    [newTitle, title]
   );
 
-  console.log("RENDERED", title);
+  console.log("RENDERED", title, "NEWTITLE", newTitle);
+
+  const handleStartEditing = useCallback(() => {
+    setNewTitle(title);
+    setEditing(true);
+  }, [title]);
 
   const handleCompletedStatusChange = useCallback(async () => {
     const todoNewParams: UpdateTodoParameters = {
@@ -82,16 +89,19 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected }) => {
   const handleDeleteItem = useCallback(async () => {
     await deleteTodo(id);
     dispatch(removeTodo(id));
-  }, []);
+  }, [id]);
+
   const handleCancelEditing = useCallback(() => {
     setEditing(false);
     setNewTitle(title);
-  }, []);
+  }, [title]);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     void handleSaveResult();
   };
+
+  useEffect(() => {}, []);
 
   return (
     <TodoWrapper>
@@ -114,7 +124,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected }) => {
                 disabled={isLoadingTodo}
                 onCheckboxChange={handleCompletedStatusChange}
               />
-              <TodoTitle done={String(completed)} onClick={() => setEditing(true)}>
+              <TodoTitle done={String(completed)} onClick={handleStartEditing}>
                 {title}
               </TodoTitle>
             </>
@@ -125,13 +135,14 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected }) => {
             editing={editing}
             saveResult={() => handleSaveResult()}
             deleteItem={handleDeleteItem}
-            toggleEdit={() => setEditing(true)}
+            toggleEdit={handleStartEditing}
             cancelEdit={handleCancelEditing}
           />
         </TodoItemButtonsWrapper>
       </TodoInfoWrapper>
       <TodoGroupList todo={todo} />
       {isSelected && <DropdownMenu todo={todo} />}
+      {isChangesRequested && <Notification />}
     </TodoWrapper>
   );
 };

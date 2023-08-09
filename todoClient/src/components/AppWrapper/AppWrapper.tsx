@@ -6,7 +6,6 @@ import { addNewTodo } from "../../http/API.ts";
 import { addTodo } from "../../store/Reducers/TodoReducer.ts";
 import Header from "../Header/Header.tsx";
 import { Main } from "./AppWrapper.styled.ts";
-import Notification from "../Notification/Notification.tsx";
 
 const AppWrapper = () => {
   const dispatch = useAppDispatch();
@@ -22,7 +21,6 @@ const AppWrapper = () => {
     <>
       <Header />
       <Main>
-        <Notification />
         <TodoAddForm onAdd={handleAddTodo} />
         <TodoList />
       </Main>

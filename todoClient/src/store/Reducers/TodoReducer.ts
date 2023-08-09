@@ -21,7 +21,7 @@ interface IState {
   isLoadingTodoList: boolean;
   isLoadingTodo: boolean;
   isFetched: boolean;
-  isChangesRequested: boolean;
+  isChangesRequestedId: ITodo["id"];
   todoItemError: string;
   todoListError: string;
 }
@@ -44,7 +44,7 @@ const initialState: IState = {
   isLoadingTodoList: false,
   isLoadingTodo: false,
   isFetched: false,
-  isChangesRequested: false,
+  isChangesRequestedId: -1,
   todoItemError: "",
   todoListError: ""
 };
@@ -75,11 +75,9 @@ const todoSlice = createSlice({
     updateCurrentTodo(state, action: PayloadAction<ITodo>) {
       state.currentTodo = action.payload;
     },
-    setChangesRequested(state, action: PayloadAction<boolean>) {
-      state.isChangesRequested = action.payload;
-      if (!action.payload) {
-        state.changedTodo = initialState.changedTodo;
-      }
+    resetChangesRequestedId(state) {
+      state.isChangesRequestedId = initialState.isChangesRequestedId;
+      state.changedTodo = initialState.changedTodo;
     },
     setIsLoadingTodo(state, action: PayloadAction<boolean>) {
       state.isLoadingTodo = action.payload;
@@ -106,10 +104,11 @@ const todoSlice = createSlice({
 
       const { message, todo } = action.payload;
       if (message === "success") {
-        state.isChangesRequested = false;
+        state.isChangesRequestedId = initialState.isChangesRequestedId;
         state.changedTodo = initialState.changedTodo;
 
         // обновить одну тудуху которая приехала
+        console.log(todo);
         const { id } = todo;
         const todoToUpdateIndex = state.todos.findIndex((item: ITodo) => item.id === id);
         if (todoToUpdateIndex !== -1) {
@@ -120,19 +119,20 @@ const todoSlice = createSlice({
         }
       }
       if (message === "request changes") {
-        state.isChangesRequested = true;
+        const { id } = todo;
+        state.isChangesRequestedId = id;
         state.changedTodo = todo;
       }
     });
     builder.addCase(updateTodoRequest.pending.type, (state) => {
       state.isLoadingTodo = true;
-      state.isChangesRequested = false;
+      state.isChangesRequestedId = initialState.isChangesRequestedId;
       state.changedTodo = initialState.changedTodo;
     });
     builder.addCase(updateTodoRequest.rejected.type, (state, action: PayloadAction<string>) => {
       state.isLoadingTodo = false;
       state.todoItemError = action.payload;
-      state.isChangesRequested = false;
+      state.isChangesRequestedId = initialState.isChangesRequestedId;
       state.changedTodo = initialState.changedTodo;
     });
   }
@@ -163,11 +163,12 @@ export const addNewGroupToTodoRequest = createAsyncThunk(
     const { todo, groupId } = params;
     thinkApi.dispatch(setIsLoadingTodo(true));
     const response = await requestAddNewGroupToTodo(todo, groupId);
-    thinkApi.dispatch(setIsLoadingTodo(false));
     if (response instanceof Error) {
+      thinkApi.dispatch(setIsLoadingTodo(false));
       return thinkApi.rejectWithValue(response.message);
     }
     thinkApi.dispatch(updateTodo(response));
+    thinkApi.dispatch(setIsLoadingTodo(false));
   }
 );
 
@@ -177,11 +178,13 @@ export const deleteGroupFromTodoRequest = createAsyncThunk(
     const { todo, groupId } = params;
     thinkApi.dispatch(setIsLoadingTodo(true));
     const response = await requestDeleteGroupFromTodo(todo, groupId);
-    thinkApi.dispatch(setIsLoadingTodo(false));
+    console.log(response);
     if (response instanceof Error) {
+      thinkApi.dispatch(setIsLoadingTodo(false));
       return thinkApi.rejectWithValue(response.message);
     }
     thinkApi.dispatch(updateTodo(response));
+    thinkApi.dispatch(setIsLoadingTodo(false));
   }
 );
 
@@ -189,7 +192,7 @@ export const {
   addTodo,
   removeTodo,
   updateTodo,
-  setChangesRequested,
+  resetChangesRequestedId,
   updateTodoParams,
   updateCurrentTodo,
   setIsLoadingTodo

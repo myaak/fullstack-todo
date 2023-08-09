@@ -1,4 +1,5 @@
 import { TodoGroupItemCircle, TodoGroupItemWrapper } from "./TodoGroupItem.styled.ts";
+import React from "react";
 
 interface TodoGroupItemProps {
   title: string;
@@ -16,4 +17,4 @@ const TodoGroupItem: React.FC<TodoGroupItemProps> = ({ title, onDelete }) => {
   );
 };
 
-export default TodoGroupItem;
+export default React.memo(TodoGroupItem);

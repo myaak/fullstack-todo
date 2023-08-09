@@ -18,13 +18,16 @@ const TodoGroupList: React.FC<TodoGroupListProps> = ({ todo }) => {
 
   const dispatch = useAppDispatch();
 
-  const handleOnDeleteGroup = useCallback(async (groupId: TodoGroup["id"]) => {
-    const requestToDeleteGroupParams = {
-      todo: todo,
-      groupId: groupId
-    };
-    await dispatch(deleteGroupFromTodoRequest(requestToDeleteGroupParams));
-  }, []);
+  const handleOnDeleteGroup = useCallback(
+    async (groupId: TodoGroup["id"]) => {
+      const requestToDeleteGroupParams = {
+        todo: todo,
+        groupId: groupId
+      };
+      await dispatch(deleteGroupFromTodoRequest(requestToDeleteGroupParams));
+    },
+    [todo]
+  );
 
   const todoGroupItems = useMemo(
     () =>
@@ -49,5 +52,3 @@ const TodoGroupList: React.FC<TodoGroupListProps> = ({ todo }) => {
 };
 
 export default React.memo(TodoGroupList);
-
-//TODO: когда добавил пару штук а потом удалил то удалится все - пофиксить, проблема сто проц на фронте
