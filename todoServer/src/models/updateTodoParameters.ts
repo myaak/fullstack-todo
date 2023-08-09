@@ -2,7 +2,7 @@ import { TodoDTO } from "models/todoDTO";
 
 export interface UpdateTodoParameters {
   title?: string;
-  completed?: string;
+  completed?: boolean;
 }
 
 export interface UpdatedTodoResponse {

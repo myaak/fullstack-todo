@@ -7,7 +7,6 @@ class TodoService {
   async getAllTodos(): Promise<TodoDTO[]> {
     const getAllTodos = await pool.query(
       "SELECT TL.id, TL.title, TL.completed, COALESCE((SELECT ARRAY_AGG(todo_group_id) FROM TODO_AND_GROUPS WHERE todo_id = TL.id), '{}'::INTEGER[]) AS todo_groups FROM TODOLIST TL ORDER BY ID DESC;",
-
       []
     );
 
@@ -34,9 +33,18 @@ class TodoService {
     }
   }
 
-  async checkChanges(todo: TodoDTO): Promise<boolean | UpdatedTodoResponse> {
-    const getTodoItem = await pool.query("SELECT * FROM TODOLIST WHERE ID = $1", [todo.id]);
+  async checkChanges(params: AtLeastOne<UpdateTodoParameters>, todo: TodoDTO): Promise<boolean | UpdatedTodoResponse> {
+    const getTodoItem = await pool.query(
+      "SELECT ID, TITLE, COMPLETED, COALESCE((SELECT ARRAY_AGG(todo_group_id) FROM TODO_AND_GROUPS WHERE todo_id = $1), '{}'::INTEGER[]) AS todo_groups FROM TODOLIST TL",
+      [todo.id]
+    );
     const todoItem: TodoDTO = getTodoItem.rows[0];
+    const newTodoWithParams: TodoDTO = {
+      ...todo,
+      ...params,
+      todo_groups: todo.todo_groups.sort()
+    };
+    if (areObjectsEqual(todoItem, newTodoWithParams)) return true;
     return areObjectsEqual(todoItem, todo) ? true : { message: "request changes", todo: todoItem };
   }
 
@@ -47,7 +55,7 @@ class TodoService {
   ): Promise<UpdatedTodoResponse> {
     try {
       // проверка нужны ли мзенения, если нужны - отправляем объект обратно и уведомляем что его уже меняли
-      const requestChanges = await this.checkChanges(todo);
+      const requestChanges = await this.checkChanges(params, todo);
       if (!isForce && typeof requestChanges === "object") {
         return requestChanges;
       }
