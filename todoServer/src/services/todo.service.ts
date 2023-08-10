@@ -35,7 +35,7 @@ class TodoService {
 
   async checkChanges(params: AtLeastOne<UpdateTodoParameters>, todo: TodoDTO): Promise<boolean | UpdatedTodoResponse> {
     const getTodoItem = await pool.query(
-      "SELECT ID, TITLE, COMPLETED, COALESCE((SELECT ARRAY_AGG(todo_group_id) FROM TODO_AND_GROUPS WHERE todo_id = $1), '{}'::INTEGER[]) AS todo_groups FROM TODOLIST TL",
+      "SELECT ID, TITLE, COMPLETED, COALESCE((SELECT ARRAY_AGG(todo_group_id) FROM TODO_AND_GROUPS WHERE todo_id = $1), '{}'::INTEGER[]) AS todo_groups FROM TODOLIST TL WHERE ID = $1",
       [todo.id]
     );
     const todoItem: TodoDTO = getTodoItem.rows[0];
@@ -44,6 +44,7 @@ class TodoService {
       ...params,
       todo_groups: todo.todo_groups.sort()
     };
+
     if (areObjectsEqual(todoItem, newTodoWithParams)) return true;
     return areObjectsEqual(todoItem, todo) ? true : { message: "request changes", todo: todoItem };
   }
