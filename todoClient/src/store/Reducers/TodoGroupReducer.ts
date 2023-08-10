@@ -8,7 +8,7 @@ interface IState {
   isLoadingGroupItem: boolean;
   isFetched: boolean;
   activeAddingTodoId: ITodo["id"];
-  error: string;
+  todoGroupsError: string;
 }
 
 const initialState: IState = {
@@ -17,7 +17,7 @@ const initialState: IState = {
   isLoadingGroupItem: false,
   isFetched: false,
   activeAddingTodoId: -1, // подход говна выбрал, но я пока не придумал как сделать лучше, по идее можно как-то с рефами потыкаться
-  error: ""
+  todoGroupsError: ""
 };
 
 const todoGroupSlice = createSlice({
@@ -33,15 +33,15 @@ const todoGroupSlice = createSlice({
       state.todoGroups = new Map(action.payload.map((item) => [item.id, item.title]));
       state.isLoadingGroups = false;
       state.isFetched = true;
-      state.error = "";
+      state.todoGroupsError = initialState.todoGroupsError;
     });
     builder.addCase(fetchTodoGroups.pending.type, (state) => {
       state.isLoadingGroups = true;
-      state.error = "";
+      state.todoGroupsError = initialState.todoGroupsError;
     });
     builder.addCase(fetchTodoGroups.rejected.type, (state, action: PayloadAction<string>) => {
       state.isLoadingGroups = false;
-      state.error = action.payload;
+      state.todoGroupsError = action.payload;
     });
     //postTodoGroup
     builder.addCase(postTodoGroup.fulfilled.type, (state, action: PayloadAction<TodoGroup>) => {
@@ -49,15 +49,15 @@ const todoGroupSlice = createSlice({
       state.todoGroups = state.todoGroups.set(id, title);
       console.log(state.todoGroups);
       state.isLoadingGroupItem = false;
-      state.error = "";
+      state.todoGroupsError = initialState.todoGroupsError;
     });
     builder.addCase(postTodoGroup.pending.type, (state) => {
       state.isLoadingGroupItem = true;
-      state.error = "";
+      state.todoGroupsError = initialState.todoGroupsError;
     });
     builder.addCase(postTodoGroup.rejected.type, (state, action: PayloadAction<string>) => {
       state.isLoadingGroupItem = false;
-      state.error = action.payload;
+      state.todoGroupsError = action.payload;
     });
   }
 });
