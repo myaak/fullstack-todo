@@ -7,7 +7,7 @@ import {
   TodoTitle,
   TodoWrapper
 } from "./TodoItem.styled.ts";
-import React, { FormEvent, useCallback, useEffect, useState } from "react";
+import React, { FormEvent, useCallback, useState } from "react";
 import TodoItemButtons from "./TodoItemButtons.tsx";
 import {
   removeTodo,
@@ -15,7 +15,7 @@ import {
   updateTodoParams,
   updateTodoRequest
 } from "../../store/Reducers/TodoReducer.ts";
-import { useAppDispatch, useAppSelector } from "../../store/storeHooks.ts";
+import { useAppDispatch } from "../../store/storeHooks.ts";
 import StyledCheckbox from "../Checkbox/Checkbox.tsx";
 import { deleteTodo } from "../../http/API.ts";
 import { RequestToUpdateTodoParameters, UpdateTodoParameters } from "../../types/updateTodoParameters.ts";
@@ -31,8 +31,6 @@ interface TodoItemProps {
 
 const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected, isChangesRequested }) => {
   const { id, title, completed } = todo;
-
-  const isLoadingTodo = useAppSelector((state) => state.todo.isLoadingTodo);
 
   const dispatch = useAppDispatch();
 
@@ -61,10 +59,8 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected, isChangesRequeste
       await dispatch(updateTodoRequest(todoUpdateRequestProps));
       setEditing(false);
     },
-    [newTitle, title]
+    [newTitle, title, todo]
   );
-
-  console.log("RENDERED", title, "NEWTITLE", newTitle);
 
   const handleStartEditing = useCallback(() => {
     setNewTitle(title);
@@ -84,7 +80,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected, isChangesRequeste
     dispatch(updateTodoRequest(todoUpdateRequestProps));
     dispatch(updateTodoParams(todoNewParams));
     dispatch(updateCurrentTodo({ ...todo, completed: !completed }));
-  }, [completed]);
+  }, [completed, todo]);
 
   const handleDeleteItem = useCallback(async () => {
     await deleteTodo(id);
@@ -100,8 +96,6 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected, isChangesRequeste
     e.preventDefault();
     void handleSaveResult();
   };
-
-  useEffect(() => {}, []);
 
   return (
     <TodoWrapper>
@@ -119,11 +113,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected, isChangesRequeste
             </TodoItemEditForm>
           ) : (
             <>
-              <StyledCheckbox
-                isChecked={completed}
-                disabled={isLoadingTodo}
-                onCheckboxChange={handleCompletedStatusChange}
-              />
+              <StyledCheckbox isChecked={completed} onCheckboxChange={handleCompletedStatusChange} />
               <TodoTitle done={String(completed)} onClick={handleStartEditing}>
                 {title}
               </TodoTitle>

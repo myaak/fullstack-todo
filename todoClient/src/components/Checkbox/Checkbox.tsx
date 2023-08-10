@@ -1,15 +1,18 @@
 import { Checkbox, CheckboxSymbol, CheckboxWrapper, IconCheckbox, VisuallyHidden } from "./Checkbox.styled.ts";
+import { useAppSelector } from "../../store/storeHooks.ts";
 
 interface StyledCheckboxProps {
   isChecked: boolean;
   disabled?: boolean;
   onCheckboxChange?: () => void;
 }
-const StyledCheckbox: React.FC<StyledCheckboxProps> = ({ isChecked, disabled, onCheckboxChange }) => {
+const StyledCheckbox: React.FC<StyledCheckboxProps> = ({ isChecked, onCheckboxChange }) => {
+  const isLoadingTodo = useAppSelector((state) => state.todo.isLoadingTodo);
+
   return (
     <CheckboxWrapper>
       <Checkbox onChange={onCheckboxChange}>
-        <VisuallyHidden disabled={disabled} />
+        <VisuallyHidden disabled={isLoadingTodo} />
         <CheckboxSymbol checked={isChecked}>
           <IconCheckbox
             aria-hidden="true"

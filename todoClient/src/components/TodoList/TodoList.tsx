@@ -4,12 +4,14 @@ import { useEffect, useMemo } from "react";
 import { fetchTodos } from "../../store/Reducers/TodoReducer.ts";
 import { fetchTodoGroups } from "../../store/Reducers/TodoGroupReducer.ts";
 import { TodoListWrapper } from "./TodoList.styled.ts";
+import ErrorNotification from "../ErrorNotification/ErrorNotification.tsx";
 
 const TodoList = () => {
   const activeAddingTodoId = useAppSelector((state) => state.todoGroups.activeAddingTodoId);
   const isChangesRequestedId = useAppSelector((state) => state.todo.isChangesRequestedId);
-  const { todos, isLoadingTodoList } = useAppSelector((state) => state.todo);
-  const { isLoadingGroups } = useAppSelector((state) => state.todoGroups);
+  const todos = useAppSelector((state) => state.todo.todos);
+  const isLoadingTodoList = useAppSelector((state) => state.todo.isLoadingTodoList);
+  const isLoadingGroups = useAppSelector((state) => state.todoGroups.isLoadingGroups);
   const dispatch = useAppDispatch();
 
   const todoItems = useMemo(
@@ -30,7 +32,15 @@ const TodoList = () => {
     dispatch(fetchTodoGroups());
   }, []);
 
-  return !isLoadingTodoList && !isLoadingGroups && <TodoListWrapper>{todoItems}</TodoListWrapper>;
+  return (
+    !isLoadingTodoList &&
+    !isLoadingGroups && (
+      <>
+        <ErrorNotification />
+        <TodoListWrapper>{todoItems}</TodoListWrapper>
+      </>
+    )
+  );
 };
 
 export default TodoList;

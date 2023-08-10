@@ -51,6 +51,7 @@ export const requestUpdateTodo = async (
       todo: todo,
       params: params
     };
+
     const response = await axios.patch<UpdatedTodoResponse>(`${serverUrl}/todo/${todo.id}`, objectToRequestUpdate);
     if (response.data.message === "error") {
       return new Error("Something went wrong");

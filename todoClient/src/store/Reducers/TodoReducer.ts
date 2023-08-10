@@ -101,6 +101,7 @@ const todoSlice = createSlice({
     //update todo
     builder.addCase(updateTodoRequest.fulfilled.type, (state, action: PayloadAction<UpdatedTodoResponse>) => {
       state.isLoadingTodo = false;
+      state.todoItemError = initialState.todoItemError;
 
       const { message, todo } = action.payload;
       if (message === "success") {
@@ -108,7 +109,6 @@ const todoSlice = createSlice({
         state.changedTodo = initialState.changedTodo;
 
         // обновить одну тудуху которая приехала
-        console.log(todo);
         const { id } = todo;
         const todoToUpdateIndex = state.todos.findIndex((item: ITodo) => item.id === id);
         if (todoToUpdateIndex !== -1) {
@@ -126,6 +126,7 @@ const todoSlice = createSlice({
     });
     builder.addCase(updateTodoRequest.pending.type, (state) => {
       state.isLoadingTodo = true;
+      state.todoItemError = initialState.todoItemError;
       state.isChangesRequestedId = initialState.isChangesRequestedId;
       state.changedTodo = initialState.changedTodo;
     });
@@ -178,7 +179,6 @@ export const deleteGroupFromTodoRequest = createAsyncThunk(
     const { todo, groupId } = params;
     thinkApi.dispatch(setIsLoadingTodo(true));
     const response = await requestDeleteGroupFromTodo(todo, groupId);
-    console.log(response);
     if (response instanceof Error) {
       thinkApi.dispatch(setIsLoadingTodo(false));
       return thinkApi.rejectWithValue(response.message);
