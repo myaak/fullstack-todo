@@ -33,8 +33,6 @@ const Notification = () => {
     [currentTodo, todoNewParams]
   );
 
-  console.log("RENDERED NOTI");
-
   return (
     <NotificationOverlay>
       <NotificationContent>

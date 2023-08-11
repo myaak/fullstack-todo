@@ -1,10 +1,11 @@
 import { styled } from "styled-components";
+import { ITheme } from "../../theme/theme.ts";
 
-export const TodoWrapper = styled.div`
+export const TodoWrapper = styled.div<ITheme>`
   width: 100%;
   display: flex;
   flex-direction: column;
-  border: 1px solid #9ba2ff;
+  border: 1px solid ${(props) => props.theme.mainBorderColor};
   border-radius: 5px;
   padding: 10px;
   transition: background-color 0.3s ease;
@@ -57,13 +58,13 @@ export const TodoItemEditForm = styled.form`
   width: 100%;
 `;
 
-export const EditInput = styled.input`
+export const EditInput = styled.input<ITheme>`
   width: 100%;
   padding: 5px;
-  border: 1px solid #8c94e5;
+  border: 1px solid ${(props) => props.theme.mainBorderColor};
   border-radius: 8px;
 
   &:focus {
-    outline: 1px solid #8c94e5;
+    outline: 1px solid ${(props) => props.theme.mainBorderColor};
   }
 `;

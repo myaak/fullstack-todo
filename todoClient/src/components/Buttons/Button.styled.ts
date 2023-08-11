@@ -1,10 +1,11 @@
 import { styled } from "styled-components";
+import { ITheme } from "../../theme/theme.ts";
 
-export const Button = styled.button`
+export const Button = styled.button<ITheme>`
   border-radius: 8px;
   border: 1px solid transparent;
-  color: #222;
-  background-color: #8c94e5;
+  color: ${(props) => props.theme.textColor};
+  background-color: ${(props) => props.theme.mainBgColor};
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
@@ -12,8 +13,8 @@ export const Button = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   &:hover {
-    color: #fff;
-    background-color: #7177bf;
+    color: ${(props) => props.theme.hoverTextColor};
+    background-color: ${(props) => props.theme.hoverMainBgColor};
     border-color: #646cff;
   }
   &:focus,

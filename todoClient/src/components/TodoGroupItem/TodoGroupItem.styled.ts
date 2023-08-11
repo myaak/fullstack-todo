@@ -1,6 +1,7 @@
 import { styled } from "styled-components";
+import { ITheme } from "../../theme/theme.ts";
 
-export const TodoGroupItemWrapper = styled.div`
+export const TodoGroupItemWrapper = styled.div<ITheme>`
   height: 25px;
   width: max-content;
   display: flex;
@@ -8,7 +9,7 @@ export const TodoGroupItemWrapper = styled.div`
   gap: 5px;
   padding: 2px 10px;
   border-radius: 15px;
-  background-color: #8c94e5;
+  background-color: ${(props) => props.theme.mainBgColor};
   color: #fff;
   font-size: 10px;
   font-weight: bold;

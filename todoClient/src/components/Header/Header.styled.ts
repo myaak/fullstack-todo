@@ -1,7 +1,8 @@
 import { styled } from "styled-components";
+import { ITheme } from "../../theme/theme.ts";
 
-export const HeaderWrapper = styled.header`
-  background-color: #8c94e5;
+export const HeaderWrapper = styled.header<ITheme>`
+  background-color: ${(props) => props.theme.mainBgColor};
   color: white;
   text-align: center;
   padding: 20px;

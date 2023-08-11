@@ -1,4 +1,5 @@
 import { styled } from "styled-components";
+import { ITheme } from "../../theme/theme.ts";
 
 export const NotificationOverlay = styled.div`
   position: fixed;
@@ -21,12 +22,12 @@ export const NotificationContent = styled.div`
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 `;
 
-export const NotificationTitle = styled.div`
+export const NotificationTitle = styled.div<ITheme>`
   text-align: center;
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 16px;
-  color: #8c94e5;
+  color: ${(props) => props.theme.mainBgColor};
 `;
 export const NotificationCause = styled(NotificationTitle)`
   margin: 0;
@@ -39,13 +40,6 @@ export const NotificationItem = styled.div`
   & p {
     margin: 0;
   }
-`;
-
-export const CloseButton = styled.span`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
 `;
 
 export const NotificationButtonsWrapper = styled.div`

@@ -1,4 +1,5 @@
 import { styled } from "styled-components";
+import { ITheme } from "../../theme/theme.ts";
 
 export const TodoItemGroupsWrapper = styled.div`
   padding-top: 5px;
@@ -7,7 +8,7 @@ export const TodoItemGroupsWrapper = styled.div`
   flex-wrap: wrap;
 `;
 
-export const TodoItemGroupAddButton = styled.button`
+export const TodoItemGroupAddButton = styled.button<ITheme>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,7 +17,7 @@ export const TodoItemGroupAddButton = styled.button`
   text-align: center;
   padding: 2px 8px;
   border-radius: 15px;
-  background-color: #8c94e5;
+  background-color: ${(props) => props.theme.mainBgColor};
   color: #fff;
   font-size: 18px;
   font-weight: bold;

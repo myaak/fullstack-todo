@@ -1,7 +1,8 @@
 import { styled } from "styled-components";
+import { ITheme } from "../../theme/theme.ts";
 
-export const Main = styled.main`
-  width: 800px;
+export const Main = styled.main<ITheme>`
+  width: ${(props) => props.theme.defaultWidth};
   margin: 0 auto;
   display: flex;
   flex-direction: column;
