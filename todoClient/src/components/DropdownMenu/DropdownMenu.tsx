@@ -22,22 +22,23 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ todo }) => {
 
   const [inputString, setInputString] = useState<string>("");
 
+  const todoGroupsReversedArray = useMemo(() => Array.from(todoGroups).reverse(), [todoGroups]);
+
   const filteredGroups = useMemo(
     () =>
       inputString === ""
-        ? Array.from(todoGroups)
-            .reverse()
-            .map(([key, value]) => !todo_groups.includes(key) && <DropdownItem key={key} id={key} title={value} />)
-        : Array.from(todoGroups)
-            .reverse()
-            .map(
-              ([key, value]) =>
-                !todo_groups.includes(key) &&
-                value.toUpperCase().includes(inputString.toUpperCase()) && (
-                  <DropdownItem key={key} id={key} title={value} />
-                )
-            ),
-    [inputString, todoGroups, todo_groups]
+        ? todoGroupsReversedArray.map(
+            ([key, value]) =>
+              !todo_groups.includes(key) && <DropdownItem key={key} id={key} title={value} todo={todo} />
+          )
+        : todoGroupsReversedArray.map(
+            ([key, value]) =>
+              !todo_groups.includes(key) &&
+              value.toUpperCase().includes(inputString.toUpperCase()) && (
+                <DropdownItem key={key} id={key} title={value} todo={todo} />
+              )
+          ),
+    [inputString, todoGroupsReversedArray, todo_groups, todo]
   );
 
   const handleAddNewGroup = useCallback(async () => {

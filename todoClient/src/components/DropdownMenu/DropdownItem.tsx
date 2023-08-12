@@ -4,20 +4,17 @@ import { useAppDispatch, useAppSelector } from "../../store/storeHooks.ts";
 import { addNewGroupToTodoRequest } from "../../store/Reducers/TodoReducer.ts";
 import { TodoGroup } from "../../types/todoGroup.ts";
 interface DropdownItemProps {
+  todo: ITodo;
   id: TodoGroup["id"];
   title: TodoGroup["title"];
 }
 
-const DropdownItem: React.FC<DropdownItemProps> = ({ id, title }) => {
-  const { activeAddingTodoId } = useAppSelector((state) => state.todoGroups);
-  const { todos } = useAppSelector((state) => state.todo);
+const DropdownItem: React.FC<DropdownItemProps> = ({ id, title, todo }) => {
   const isLoadingTodo = useAppSelector((state) => state.todo.isLoadingTodo);
   const dispatch = useAppDispatch();
 
   const handleAddNewGroupToTodo = useCallback(async () => {
     if (isLoadingTodo) return; // чтобы в припадке не добавлял
-    const todo = todos.find((item: ITodo) => activeAddingTodoId === item.id);
-    if (todo === undefined) return;
 
     const requestParams = {
       todo: todo,
@@ -25,7 +22,7 @@ const DropdownItem: React.FC<DropdownItemProps> = ({ id, title }) => {
     };
 
     await dispatch(addNewGroupToTodoRequest(requestParams));
-  }, [isLoadingTodo, todos]);
+  }, [isLoadingTodo, todo]);
 
   return <StyledDropdownItem onClick={handleAddNewGroupToTodo}>{title}</StyledDropdownItem>;
 };

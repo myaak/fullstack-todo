@@ -47,7 +47,6 @@ const todoGroupSlice = createSlice({
     builder.addCase(postTodoGroup.fulfilled.type, (state, action: PayloadAction<TodoGroup>) => {
       const { id, title } = action.payload;
       state.todoGroups = state.todoGroups.set(id, title);
-      console.log(state.todoGroups);
       state.isLoadingGroupItem = false;
       state.todoGroupsError = initialState.todoGroupsError;
     });
