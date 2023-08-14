@@ -2,7 +2,9 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   getAllTodos,
   requestAddNewGroupToTodo,
+  requestAddNewTodo,
   requestDeleteGroupFromTodo,
+  requestGetSpecificTodoGroupsWithValues,
   requestUpdateTodo
 } from "../../http/API.ts";
 import {
@@ -10,17 +12,19 @@ import {
   UpdatedTodoResponse,
   UpdateTodoParameters
 } from "../../types/updateTodoParameters.ts";
-import { AtLeastOne } from "../../types/AtLeastOne.ts";
+import { Helpers } from "../../types/helpers.ts";
 import { TodoGroup } from "../../types/todoGroup.ts";
 
 interface IState {
   todos: ITodo[];
   changedTodo: ITodo;
   currentTodo: ITodo;
-  todoNewParams: AtLeastOne<UpdateTodoParameters>;
+  todosActiveGroupsList: TodoGroup[];
+  todoNewParams: Helpers<UpdateTodoParameters>;
   isLoadingTodoList: boolean;
   isLoadingTodo: boolean;
-  isFetched: boolean;
+  isFetchedTodos: boolean;
+  isFetchedGroups: boolean;
   isChangesRequestedId: ITodo["id"];
   todoItemError: string;
   todoListError: string;
@@ -40,10 +44,12 @@ const initialState: IState = {
     completed: false,
     todo_groups: []
   },
+  todosActiveGroupsList: [],
   todoNewParams: {},
   isLoadingTodoList: false,
   isLoadingTodo: false,
-  isFetched: false,
+  isFetchedTodos: false,
+  isFetchedGroups: false,
   isChangesRequestedId: -1,
   todoItemError: "",
   todoListError: ""
@@ -81,13 +87,16 @@ const todoSlice = createSlice({
     },
     setIsLoadingTodo(state, action: PayloadAction<boolean>) {
       state.isLoadingTodo = action.payload;
+    },
+    addTodoGroupToExisting(state, action: PayloadAction<TodoGroup>) {
+      state.todosActiveGroupsList.push(action.payload);
     }
   },
   extraReducers: (builder) => {
     builder.addCase(fetchTodos.fulfilled.type, (state, action: PayloadAction<ITodo[]>) => {
       state.todos = action.payload;
       state.isLoadingTodoList = false;
-      state.isFetched = true;
+      state.isFetchedTodos = true;
       state.todoListError = "";
     });
     builder.addCase(fetchTodos.pending.type, (state) => {
@@ -136,55 +145,98 @@ const todoSlice = createSlice({
       state.isChangesRequestedId = initialState.isChangesRequestedId;
       state.changedTodo = initialState.changedTodo;
     });
+    //
+    builder.addCase(fetchSpecificGroups.fulfilled.type, (state, action: PayloadAction<TodoGroup[]>) => {
+      state.todosActiveGroupsList = action.payload;
+      state.isFetchedGroups = true;
+      state.isLoadingTodoList = false;
+      state.todoListError = initialState.todoItemError;
+    });
+    builder.addCase(fetchSpecificGroups.pending.type, (state) => {
+      state.isLoadingTodoList = true;
+      state.todoListError = "";
+    });
+    builder.addCase(fetchSpecificGroups.rejected.type, (state, action: PayloadAction<string>) => {
+      state.isLoadingTodoList = false;
+      state.todoListError = action.payload;
+    });
   }
 });
 
 export const fetchTodos = createAsyncThunk("getTodos", async (_, thinkApi) => {
-  const response = await getAllTodos();
-  if (response instanceof Error) {
-    return thinkApi.rejectWithValue(response.message);
+  try {
+    const response = await getAllTodos();
+    const todosGroupsList = Array.from(new Set(response.flatMap((item: ITodo) => item.todo_groups))).sort(); // достать только те группы, которые есть у тудух
+    await thinkApi.dispatch(fetchSpecificGroups(todosGroupsList));
+    return response;
+  } catch (e) {
+    return thinkApi.rejectWithValue(e);
   }
-  return response;
+});
+
+export const fetchSpecificGroups = createAsyncThunk(
+  "getSpecificGroups",
+  async (groups: ITodo["todo_groups"], thinkApi) => {
+    try {
+      const response = await requestGetSpecificTodoGroupsWithValues(groups);
+      return response;
+    } catch (e) {
+      return thinkApi.rejectWithValue(e);
+    }
+  }
+);
+
+export const addNewTodo = createAsyncThunk("addNewTodo", async (newTodoTitle: ITodo["title"], thinkApi) => {
+  try {
+    const response = await requestAddNewTodo(newTodoTitle);
+    await thinkApi.dispatch(addTodo(response));
+    return response;
+  } catch (e) {
+    return thinkApi.rejectWithValue(e);
+  }
 });
 
 export const updateTodoRequest = createAsyncThunk(
   "updateTodo",
   async ({ isForce, params, todo }: RequestToUpdateTodoParameters, thinkApi) => {
-    const response = await requestUpdateTodo(isForce, params, todo);
-    if (response instanceof Error) {
-      return thinkApi.rejectWithValue(response.message);
+    try {
+      const response = await requestUpdateTodo(isForce, params, todo);
+      return response;
+    } catch (e) {
+      return thinkApi.rejectWithValue(e);
     }
-    return response;
   }
 );
 
 export const addNewGroupToTodoRequest = createAsyncThunk(
   "addNewGroupToTodo",
   async (params: { todo: ITodo; groupId: TodoGroup["id"] }, thinkApi) => {
-    const { todo, groupId } = params;
-    thinkApi.dispatch(setIsLoadingTodo(true));
-    const response = await requestAddNewGroupToTodo(todo, groupId);
-    if (response instanceof Error) {
+    try {
+      const { todo, groupId } = params;
+      thinkApi.dispatch(setIsLoadingTodo(true));
+      const response = await requestAddNewGroupToTodo(todo, groupId);
+      await thinkApi.dispatch(updateTodo(response));
       thinkApi.dispatch(setIsLoadingTodo(false));
-      return thinkApi.rejectWithValue(response.message);
+    } catch (e) {
+      thinkApi.dispatch(setIsLoadingTodo(false));
+      return thinkApi.rejectWithValue(e);
     }
-    thinkApi.dispatch(updateTodo(response));
-    thinkApi.dispatch(setIsLoadingTodo(false));
   }
 );
 
 export const deleteGroupFromTodoRequest = createAsyncThunk(
   "deleteGroupFromTodoRequest",
   async (params: { todo: ITodo; groupId: TodoGroup["id"] }, thinkApi) => {
-    const { todo, groupId } = params;
-    thinkApi.dispatch(setIsLoadingTodo(true));
-    const response = await requestDeleteGroupFromTodo(todo, groupId);
-    if (response instanceof Error) {
+    try {
+      const { todo, groupId } = params;
+      thinkApi.dispatch(setIsLoadingTodo(true));
+      const response = await requestDeleteGroupFromTodo(todo, groupId);
+      await thinkApi.dispatch(updateTodo(response));
       thinkApi.dispatch(setIsLoadingTodo(false));
-      return thinkApi.rejectWithValue(response.message);
+    } catch (e) {
+      thinkApi.dispatch(setIsLoadingTodo(false));
+      return thinkApi.rejectWithValue(e);
     }
-    thinkApi.dispatch(updateTodo(response));
-    thinkApi.dispatch(setIsLoadingTodo(false));
   }
 );
 
@@ -195,6 +247,7 @@ export const {
   resetChangesRequestedId,
   updateTodoParams,
   updateCurrentTodo,
+  addTodoGroupToExisting,
   setIsLoadingTodo
 } = todoSlice.actions;
 export default todoSlice.reducer;

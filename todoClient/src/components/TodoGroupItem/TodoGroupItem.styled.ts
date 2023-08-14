@@ -1,7 +1,7 @@
 import { styled } from "styled-components";
-import { ITheme } from "../../theme/theme.ts";
+import { ColoredItemsProps } from "../../types/helpers.ts";
 
-export const TodoGroupItemWrapper = styled.div<ITheme>`
+export const TodoGroupItemWrapper = styled.div<ColoredItemsProps>`
   height: 25px;
   width: max-content;
   display: flex;
@@ -9,7 +9,7 @@ export const TodoGroupItemWrapper = styled.div<ITheme>`
   gap: 5px;
   padding: 2px 10px;
   border-radius: 15px;
-  background-color: ${(props) => props.theme.mainBgColor};
+  background-color: ${(props) => props.color};
   color: #fff;
   font-size: 10px;
   font-weight: bold;
@@ -19,7 +19,7 @@ export const TodoGroupItemWrapper = styled.div<ITheme>`
   transition: background-color 0.2s ease;
 
   &:hover {
-    background-color: #757cc8;
+    background-color: ${(props) => props.hoverColor};
   }
 `;
 

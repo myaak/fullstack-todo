@@ -8,7 +8,7 @@ const App = () => {
   return (
     <Provider store={store}>
       <ThemeProvider theme={theme}>
-        <AppWrapper />;
+        <AppWrapper />
       </ThemeProvider>
     </Provider>
   );

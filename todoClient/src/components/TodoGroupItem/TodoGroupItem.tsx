@@ -1,15 +1,17 @@
 import { TodoGroupItemCircle, TodoGroupItemWrapper } from "./TodoGroupItem.styled.ts";
 import React from "react";
+import { TodoGroup } from "../../types/todoGroup.ts";
 
 interface TodoGroupItemProps {
-  title: string;
+  group: TodoGroup;
   onDelete: () => void;
 }
 
-const TodoGroupItem: React.FC<TodoGroupItemProps> = ({ title, onDelete }) => {
+const TodoGroupItem: React.FC<TodoGroupItemProps> = ({ group, onDelete }) => {
+  const { title, color, hoverColor } = group;
   return (
     <>
-      <TodoGroupItemWrapper>
+      <TodoGroupItemWrapper color={color} hoverColor={hoverColor}>
         <TodoGroupItemCircle onClick={onDelete} />
         {title}
       </TodoGroupItemWrapper>

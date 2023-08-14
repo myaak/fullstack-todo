@@ -17,7 +17,7 @@ import {
 } from "../../store/Reducers/TodoReducer.ts";
 import { useAppDispatch } from "../../store/storeHooks.ts";
 import StyledCheckbox from "../Checkbox/Checkbox.tsx";
-import { deleteTodo } from "../../http/API.ts";
+import { requestDeleteTodo } from "../../http/API.ts";
 import { RequestToUpdateTodoParameters, UpdateTodoParameters } from "../../types/updateTodoParameters.ts";
 import DropdownMenu from "../DropdownMenu/DropdownMenu.tsx";
 import TodoGroupList from "../TodoGroupList/TodoGroupList.tsx";
@@ -39,13 +39,14 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected, isChangesRequeste
 
   const handleSaveResult = useCallback(
     async (isForce: boolean = false) => {
-      if (newTitle === title) {
+      const titleWithNoSpaces = newTitle.trim();
+      if (titleWithNoSpaces === title) {
         setEditing(false);
         return;
       }
 
       const todoNewParams: UpdateTodoParameters = {
-        title: newTitle
+        title: titleWithNoSpaces
       };
 
       const todoUpdateRequestProps: RequestToUpdateTodoParameters = {
@@ -55,9 +56,10 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected, isChangesRequeste
       };
 
       dispatch(updateTodoParams(todoNewParams));
-      dispatch(updateCurrentTodo({ ...todo, title: newTitle }));
+      dispatch(updateCurrentTodo({ ...todo, title: titleWithNoSpaces }));
       await dispatch(updateTodoRequest(todoUpdateRequestProps));
       setEditing(false);
+      //TODO: возомжно это можно в танк запихнуть
     },
     [newTitle, title, todo]
   );
@@ -83,8 +85,10 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected, isChangesRequeste
   }, [completed, todo]);
 
   const handleDeleteItem = useCallback(async () => {
-    await deleteTodo(id);
-    dispatch(removeTodo(id));
+    try {
+      await requestDeleteTodo(id);
+      dispatch(removeTodo(id));
+    } catch (e) {}
   }, [id]);
 
   const handleCancelEditing = useCallback(() => {

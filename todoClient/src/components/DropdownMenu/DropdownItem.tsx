@@ -1,15 +1,15 @@
 import { StyledDropdownItem } from "./DropdownMenu.styled.ts";
 import React, { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/storeHooks.ts";
-import { addNewGroupToTodoRequest } from "../../store/Reducers/TodoReducer.ts";
+import { addNewGroupToTodoRequest, addTodoGroupToExisting } from "../../store/Reducers/TodoReducer.ts";
 import { TodoGroup } from "../../types/todoGroup.ts";
 interface DropdownItemProps {
   todo: ITodo;
-  id: TodoGroup["id"];
-  title: TodoGroup["title"];
+  todoGroup: TodoGroup;
 }
 
-const DropdownItem: React.FC<DropdownItemProps> = ({ id, title, todo }) => {
+const DropdownItem: React.FC<DropdownItemProps> = ({ todo, todoGroup }) => {
+  const { id, title, color, hoverColor } = todoGroup;
   const isLoadingTodo = useAppSelector((state) => state.todo.isLoadingTodo);
   const dispatch = useAppDispatch();
 
@@ -22,9 +22,14 @@ const DropdownItem: React.FC<DropdownItemProps> = ({ id, title, todo }) => {
     };
 
     await dispatch(addNewGroupToTodoRequest(requestParams));
-  }, [isLoadingTodo, todo]);
+    await dispatch(addTodoGroupToExisting(todoGroup));
+  }, [isLoadingTodo, todo, todoGroup]);
 
-  return <StyledDropdownItem onClick={handleAddNewGroupToTodo}>{title}</StyledDropdownItem>;
+  return (
+    <StyledDropdownItem color={color} hoverColor={hoverColor} onClick={handleAddNewGroupToTodo}>
+      {title}
+    </StyledDropdownItem>
+  );
 };
 
 export default React.memo(DropdownItem);

@@ -7,7 +7,7 @@ export const Main = styled.main<ITheme>`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 20px 0;
 
   @media screen and (max-width: 799px) {
     margin: 0;

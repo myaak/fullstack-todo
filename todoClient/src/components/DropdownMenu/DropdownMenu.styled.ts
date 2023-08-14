@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { AddFormInput } from "../TodoAddForm/TodoAddForm.styled.ts";
 import { ITheme } from "../../theme/theme.ts";
+import { ColoredItemsProps } from "../../types/helpers.ts";
 
 export const DropdownContainer = styled.div<ITheme>`
   z-index: ${(props) => props.theme.maxZIndex};
@@ -17,6 +18,8 @@ export const DropdownContent = styled.div<ITheme>`
   top: 100%;
   left: 0;
   width: 100%;
+  height: 220px;
+  overflow-y: scroll;
   background-color: white;
   border: 1px solid ${(props) => props.theme.mainBorderColor};
   border-radius: 5px;
@@ -34,10 +37,15 @@ export const SearchGroupInput = styled(AddFormInput)`
   flex-grow: 1;
 `;
 
-export const StyledDropdownItem = styled.div`
+export const StyledDropdownItem = styled.div<ColoredItemsProps>`
+  background-color: ${(props) => props.color};
   padding: 10px;
   &:hover {
-    background-color: #f2f2f2;
+    background-color: ${(props) => props.hoverColor};
     cursor: pointer;
   }
+`;
+
+export const NoGroupsNotification = styled.div`
+  padding: 10px;
 `;

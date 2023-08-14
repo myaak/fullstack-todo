@@ -1,20 +1,18 @@
-import TodoList from "../TodoList/TodoList.tsx";
 import TodoAddForm from "../TodoAddForm/TodoAddForm.tsx";
 import { useCallback } from "react";
 import { useAppDispatch } from "../../store/storeHooks.ts";
-import { addNewTodo } from "../../http/API.ts";
-import { addTodo } from "../../store/Reducers/TodoReducer.ts";
+import { addNewTodo } from "../../store/Reducers/TodoReducer.ts";
 import Header from "../Header/Header.tsx";
 import { Main } from "./AppWrapper.styled.ts";
+import TodoListWrapper from "../TodoList/TodoListWrapper.tsx";
 
 const AppWrapper = () => {
   const dispatch = useAppDispatch();
 
   const handleAddTodo = useCallback(async (title: ITodo["title"]) => {
-    if (title === "") return;
-    const newTodo = await addNewTodo(title);
-    if (newTodo instanceof Error) return; // обработать ошибку
-    dispatch(addTodo(newTodo));
+    const titleWithNoSpaces = title.trim();
+    if (titleWithNoSpaces === "") return;
+    dispatch(addNewTodo(titleWithNoSpaces));
   }, []);
 
   return (
@@ -22,7 +20,7 @@ const AppWrapper = () => {
       <Header />
       <Main>
         <TodoAddForm onAdd={handleAddTodo} />
-        <TodoList />
+        <TodoListWrapper />
       </Main>
     </>
   );

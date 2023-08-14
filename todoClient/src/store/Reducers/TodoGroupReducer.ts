@@ -1,9 +1,10 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { requestAddNewTodoGroup, requestGetAllTodoGroups } from "../../http/API.ts";
 import { TodoGroup } from "../../types/todoGroup.ts";
+import { addTodoGroupToExisting } from "./TodoReducer.ts";
 
 interface IState {
-  todoGroups: Map<TodoGroup["id"], TodoGroup["title"]>;
+  todoGroups: TodoGroup[];
   isLoadingGroups: boolean;
   isLoadingGroupItem: boolean;
   isFetched: boolean;
@@ -12,11 +13,11 @@ interface IState {
 }
 
 const initialState: IState = {
-  todoGroups: new Map<TodoGroup["id"], TodoGroup["title"]>(),
+  todoGroups: [],
   isLoadingGroups: false,
   isLoadingGroupItem: false,
   isFetched: false,
-  activeAddingTodoId: -1, // подход говна выбрал, но я пока не придумал как сделать лучше, по идее можно как-то с рефами потыкаться
+  activeAddingTodoId: -1,
   todoGroupsError: ""
 };
 
@@ -25,12 +26,16 @@ const todoGroupSlice = createSlice({
   initialState,
   reducers: {
     setActiveAddingTodoId(state, action: PayloadAction<ITodo["id"]>) {
-      state.activeAddingTodoId = action.payload;
+      if (state.activeAddingTodoId === action.payload) {
+        state.activeAddingTodoId = initialState.activeAddingTodoId;
+      } else {
+        state.activeAddingTodoId = action.payload;
+      }
     }
   },
   extraReducers: (builder) => {
     builder.addCase(fetchTodoGroups.fulfilled.type, (state, action: PayloadAction<TodoGroup[]>) => {
-      state.todoGroups = new Map(action.payload.map((item) => [item.id, item.title]));
+      state.todoGroups = action.payload;
       state.isLoadingGroups = false;
       state.isFetched = true;
       state.todoGroupsError = initialState.todoGroupsError;
@@ -44,9 +49,7 @@ const todoGroupSlice = createSlice({
       state.todoGroupsError = action.payload;
     });
     //postTodoGroup
-    builder.addCase(postTodoGroup.fulfilled.type, (state, action: PayloadAction<TodoGroup>) => {
-      const { id, title } = action.payload;
-      state.todoGroups = state.todoGroups.set(id, title);
+    builder.addCase(postTodoGroup.fulfilled.type, (state) => {
       state.isLoadingGroupItem = false;
       state.todoGroupsError = initialState.todoGroupsError;
     });
@@ -61,21 +64,23 @@ const todoGroupSlice = createSlice({
   }
 });
 
-export const postTodoGroup = createAsyncThunk("postTodoGroup", async (title: TodoGroup["title"], thinkApi) => {
-  const response = await requestAddNewTodoGroup(title);
-  if (response instanceof Error) {
-    return thinkApi.rejectWithValue(response.message);
+export const postTodoGroup = createAsyncThunk("postTodoGroup", async (todoGroup: Omit<TodoGroup, "id">, thinkApi) => {
+  try {
+    const response = await requestAddNewTodoGroup(todoGroup);
+    thinkApi.dispatch(addTodoGroupToExisting(response));
+    return response;
+  } catch (e) {
+    return thinkApi.rejectWithValue(e);
   }
-
-  return response;
 });
 
 export const fetchTodoGroups = createAsyncThunk("getTodoGroups", async (_, thinkApi) => {
-  const response = await requestGetAllTodoGroups();
-  if (response instanceof Error) {
-    return thinkApi.rejectWithValue(response.message);
+  try {
+    const response = await requestGetAllTodoGroups();
+    return response;
+  } catch (e) {
+    return thinkApi.rejectWithValue(e);
   }
-  return response;
 });
 
 export const { setActiveAddingTodoId } = todoGroupSlice.actions;

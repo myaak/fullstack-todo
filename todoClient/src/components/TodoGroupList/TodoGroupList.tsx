@@ -13,8 +13,7 @@ interface TodoGroupListProps {
 const TodoGroupList: React.FC<TodoGroupListProps> = ({ todo }) => {
   const { id, todo_groups } = todo;
 
-  const activeAddingTodoId = useAppSelector((state) => state.todoGroups.activeAddingTodoId);
-  const todoGroups = useAppSelector((state) => state.todoGroups.todoGroups);
+  const todosActiveGroupsList = useAppSelector((state) => state.todo.todosActiveGroupsList);
 
   const dispatch = useAppDispatch();
 
@@ -31,18 +30,22 @@ const TodoGroupList: React.FC<TodoGroupListProps> = ({ todo }) => {
 
   const todoGroupItems = useMemo(
     () =>
-      todo_groups.map((group: number, index: number) => (
-        <TodoGroupItem key={index} title={todoGroups.get(group) ?? ""} onDelete={() => handleOnDeleteGroup(group)} />
-      )),
+      todo_groups.map((group: number, index: number) => {
+        const groupItem = todosActiveGroupsList.find((item: TodoGroup) => item.id === group);
+        if (groupItem) {
+          return <TodoGroupItem key={index} group={groupItem} onDelete={() => handleOnDeleteGroup(group)} />;
+        }
+        return null;
+      }),
 
-    [todo_groups, todoGroups]
+    [todo_groups, todosActiveGroupsList]
   );
   return (
     <TodoItemGroupsWrapper>
       {todoGroupItems}
       <TodoItemGroupAddButton
         onClick={() => {
-          dispatch(setActiveAddingTodoId(activeAddingTodoId === id ? -1 : id));
+          dispatch(setActiveAddingTodoId(id));
         }}
       >
         +
