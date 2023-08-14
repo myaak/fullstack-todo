@@ -8,4 +8,6 @@ export interface TodoDTO {
 export interface TodoGroup {
   id: number;
   title: string;
+  color: string;
+  hoverColor: string;
 }

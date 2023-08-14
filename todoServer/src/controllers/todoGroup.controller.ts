@@ -12,10 +12,32 @@ class TodoGroupController {
     }
   }
 
+  async getSpecificGroupsWithValues(req: Request, res: Response, next: NextFunction) {
+    try {
+      const groups = req.query.groups !== undefined ? (req.query.groups as string[]) : undefined; // не понимаю почему видит только первое объявление фигня какая-то
+      const specificGroups: TodoGroup[] = await todoGroupService.getSpecificGroupsWithValues(groups?.map(Number));
+      res.status(200).json(specificGroups);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async getSpecificGroupsWithoutValues(req: Request, res: Response, next: NextFunction) {
+    try {
+      const groups = req.query.groups !== undefined ? (req.query.groups as string[]) : undefined; // не понимаю почему видит только первое объявление фигня какая-то
+      const specificGroups: TodoGroup[] = await todoGroupService.getSpecificGroupsWithoutValues(groups?.map(Number));
+      res.status(200).json(specificGroups);
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async addNewGroup(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title } = req.body;
-      const newGroup = await todoGroupService.addNewGroup(title);
+      const { title, color, hoverColor } = req.body;
+      console.log(title, color, hoverColor);
+      const newGroup = await todoGroupService.addNewGroup(title, color, hoverColor);
+      console.log(newGroup);
       res.status(200).json(newGroup);
     } catch (e) {
       next(e);
