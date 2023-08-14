@@ -1,5 +1,5 @@
 import { TodoGroup } from "../../types/todoGroup.ts";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { DropdownFilterTitle, DropdownFilterWrapper, StyledDropdownFilterItem } from "./DropdownFilter.styled.ts";
 import { StyledDropdownItem } from "../DropdownMenu/DropdownMenu.styled.ts";
 import { Button } from "../Buttons/Button.styled.ts";
@@ -15,7 +15,27 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({ onPress }) => {
   const [selectedTitle, setSelectedTitle] = useState<string>(initialTitleValue);
   const [selectedId, setSelectedId] = useState<TodoGroup["id"] | null>();
   const [expanded, setExpanded] = useState<boolean>(false);
-  console.log("RENDERED DROP");
+
+  const activeTodosItems = useMemo(
+    () =>
+      todosActiveGroupsList.map((item: TodoGroup) => (
+        <StyledDropdownItem
+          color={item.color}
+          hoverColor={item.hoverColor}
+          key={item.id}
+          onClick={() => {
+            setSelectedId(item.id);
+            setSelectedTitle(item.title);
+            setExpanded(false);
+            onPress(item.id);
+          }}
+        >
+          {item.title}
+        </StyledDropdownItem>
+      )),
+
+    [todosActiveGroupsList]
+  );
 
   return (
     <DropdownFilterWrapper>
@@ -36,20 +56,8 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({ onPress }) => {
           </Button>
         )}
       </DropdownFilterTitle>
-      {expanded &&
-        todosActiveGroupsList.map((item: TodoGroup) => (
-          <StyledDropdownItem
-            key={item.id}
-            onClick={() => {
-              setSelectedId(item.id);
-              setSelectedTitle(item.title);
-              setExpanded(false);
-              onPress(item.id);
-            }}
-          >
-            {item.title}
-          </StyledDropdownItem>
-        ))}
+      {expanded && todosActiveGroupsList.length > 0 && activeTodosItems}
+      {expanded && todosActiveGroupsList.length <= 0 && <StyledDropdownItem>No active groups yet</StyledDropdownItem>}
     </DropdownFilterWrapper>
   );
 };
