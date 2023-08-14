@@ -35,9 +35,7 @@ class TodoGroupController {
   async addNewGroup(req: Request, res: Response, next: NextFunction) {
     try {
       const { title, color, hoverColor } = req.body;
-      console.log(title, color, hoverColor);
       const newGroup = await todoGroupService.addNewGroup(title, color, hoverColor);
-      console.log(newGroup);
       res.status(200).json(newGroup);
     } catch (e) {
       next(e);
