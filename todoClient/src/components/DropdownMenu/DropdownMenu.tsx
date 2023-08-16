@@ -33,13 +33,29 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ todo }) => {
       inputString === ""
         ? fetchedGroups.map(
             (item: TodoGroup) =>
-              !todo_groups.includes(item.id) && <DropdownItem key={item.id} todo={todo} todoGroup={item} />
+              !todo_groups.includes(item.id) && (
+                <DropdownItem
+                  key={item.id}
+                  todo={todo}
+                  todoGroup={item}
+                  isExisting={Boolean(
+                    todosActiveGroupsList.find((activeGroup: TodoGroup) => activeGroup.id === item.id)
+                  )}
+                />
+              )
           )
         : fetchedGroups.map(
             (item: TodoGroup) =>
               !todo_groups.includes(item.id) &&
               item.title.toUpperCase().includes(inputString.toUpperCase()) && (
-                <DropdownItem key={item.id} todo={todo} todoGroup={item} />
+                <DropdownItem
+                  key={item.id}
+                  todo={todo}
+                  todoGroup={item}
+                  isExisting={Boolean(
+                    todosActiveGroupsList.find((activeGroup: TodoGroup) => activeGroup.id === item.id)
+                  )}
+                />
               )
           ),
     [inputString, todosActiveGroupsList, fetchedGroups, todo]

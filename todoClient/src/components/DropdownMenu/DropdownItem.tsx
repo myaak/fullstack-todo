@@ -6,9 +6,10 @@ import { TodoGroup } from "../../types/todoGroup.ts";
 interface DropdownItemProps {
   todo: ITodo;
   todoGroup: TodoGroup;
+  isExisting: boolean;
 }
 
-const DropdownItem: React.FC<DropdownItemProps> = ({ todo, todoGroup }) => {
+const DropdownItem: React.FC<DropdownItemProps> = ({ todo, todoGroup, isExisting }) => {
   const { id, title, color, hoverColor } = todoGroup;
   const isLoadingTodo = useAppSelector((state) => state.todo.isLoadingTodo);
   const dispatch = useAppDispatch();
@@ -22,6 +23,7 @@ const DropdownItem: React.FC<DropdownItemProps> = ({ todo, todoGroup }) => {
     };
 
     await dispatch(addNewGroupToTodoRequest(requestParams));
+    if (isExisting) return;
     await dispatch(addTodoGroupToExisting(todoGroup));
   }, [isLoadingTodo, todo, todoGroup]);
 
